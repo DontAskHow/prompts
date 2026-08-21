@@ -1,0 +1,32 @@
+name: Portable Rust Toolchain Probe
+
+on:
+  pull_request:
+
+jobs:
+  package-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Package installed Rust toolchain
+        shell: bash
+        run: |
+          set -euxo pipefail
+          SYSROOT="$(rustc --print sysroot)"
+          rustc --version
+          cargo --version
+          echo "sysroot=$SYSROOT"
+          du -sh "$SYSROOT"
+          mkdir -p portable-rust
+          cp -a "$SYSROOT" portable-rust/toolchain
+          du -sh portable-rust/toolchain
+
+      - name: Upload portable Rust toolchain
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-rust-toolchain
+          path: portable-rust
+          compression-level: 9
+          retention-days: 1
