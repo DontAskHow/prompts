@@ -1,9 +1,6 @@
 name: ChatGPT Capability Probe
 
 on:
-  push:
-    branches:
-      - chatgpt-capability-probe
   pull_request:
   workflow_dispatch:
 
@@ -13,12 +10,22 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      - name: Run Python unit tests when present
+        shell: bash
+        run: |
+          if [[ -f test_probe.py ]]; then
+            python -m unittest -v test_probe.py
+          else
+            echo "No probe tests present"
+          fi
       - name: Produce probe output
         run: |
-          echo "ChatGPT GitHub Actions probe succeeded" > probe-output.txt
+          echo "ChatGPT GitHub Actions probe completed" > probe-output.txt
           cat probe-output.txt
       - name: Upload probe artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: chatgpt-capability-probe
           path: probe-output.txt
+          if-no-files-found: ignore
